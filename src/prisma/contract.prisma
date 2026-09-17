@@ -1,17 +1,94 @@
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  username     String   @unique
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  username     String    @unique
   firstName    String
   lastName     String
   passwordHash String
-  phoneNumber  String   @unique
-  role         Role     @default(BUYER)
-  createdAt    DateTime @default(now())
+  phoneNumber  String    @unique
+  role         Role      @default(BUYER)
+  createdAt    DateTime  @default(now())
+  auctions     Auction[]
+  bids         Bid[]
 }
 
 enum Role {
   BUYER
   MANAGER
   ADMIN
+}
+
+model Make {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  models Model[]
+}
+
+model Model {
+  id       Int       @id @default(autoincrement())
+  name     String
+  make     Make      @relation(fields: [makeId], references: [id])
+  makeId   Int
+  vehicles Vehicle[]
+
+  @@unique([makeId, name])
+}
+
+model Vehicle {
+  id           Int          @id @default(autoincrement())
+  year         Int
+  vin          String       @unique
+  color        String
+  mileage      Int
+  transmission Transmission
+  model        Model        @relation(fields: [modelId], references: [id])
+  modelId      Int
+  auctions     Auction[]
+}
+
+enum Transmission {
+  AUTO
+  MANUAL
+}
+
+model Auction {
+  id            Int           @id @default(autoincrement())
+  startingPrice Int
+  startTime     DateTime
+  endTime       DateTime
+  status        AuctionStatus
+  vehicle       Vehicle       @relation(fields: [vehicleId], references: [id])
+  vehicleId     Int
+  manager       User          @relation(fields: [managerId], references: [id])
+  managerId     Int
+  bids          Bid[]
+}
+
+enum AuctionStatus {
+  DRAFT
+  LIVE
+  SOLD
+  ENDED
+}
+
+model Bid {
+  id         Int          @id @default(autoincrement())
+  regularBid Int
+  maxBid     Int
+  increment  Int
+  auctionId  Int
+  auction    Auction      @relation(fields: [auctionId], references: [id])
+  userId     Int
+  user       User         @relation(fields: [userId], references: [id])
+  bidHistory BidHistory[]
+
+  @@unique([userId, auctionId])
+}
+
+model BidHistory {
+  id        Int      @id @default(autoincrement())
+  bidAmount Int
+  createdAt DateTime @default(now())
+  bid       Bid      @relation(fields: [bidId], references: [id])
+  bidId     Int
 }
