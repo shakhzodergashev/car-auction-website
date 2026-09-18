@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { db } from '../prisma/db.js';
 import { CreateUserDto } from './dto/create-user.dto/create-user.dto.js';
 import bcrypt from 'bcrypt';
@@ -25,6 +25,19 @@ export class UsersService {
 
     const { passwordHash, ...safeUser } = user;
 
+    return safeUser;
+  }
+
+  async getUsersById(id) {
+    const userId = Number(id);
+
+    const users = await db.orm.public.User.where({ id: userId }).all();
+    const requestedUser = users[0];
+
+    if (!requestedUser) {
+      throw new NotFoundException('There is no user with such id');
+    }
+    const { passwordHash, ...safeUser } = requestedUser;
     return safeUser;
   }
 }
