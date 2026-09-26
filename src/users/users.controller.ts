@@ -12,7 +12,8 @@ import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/create-user.dto/update-user.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard.js';
-import { Roles } from 'src/auth/decorators/roles/roles.decorator.js';
+import { Roles } from '../auth/decorators/roles/roles.decorator.js';
+import { RolesGuard } from '../auth/guards/roles/roles.guard.js';
 
 @Controller('users')
 export class UsersController {
@@ -23,7 +24,7 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('MANAGER')
   @Get()
   getUsers() {
