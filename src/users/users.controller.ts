@@ -44,6 +44,8 @@ export class UsersController {
     return this.usersService.patchUsersById(id, updateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('MANAGER')
   @Delete(':id')
   deleteUserById(@Param('id') id: string) {
     return this.usersService.deleteUserById(id);
