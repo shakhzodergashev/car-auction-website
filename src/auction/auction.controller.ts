@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Req } from '@nestjs/common';
 import { AuctionService } from './auction.service.js';
 import { CreateAuctionDto } from './dto/create-auction.dto.js';
 import { UseGuards } from '@nestjs/common';
@@ -13,7 +13,14 @@ export class AuctionController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('MANAGER')
   @Post()
-  createAuction(@Body() createAuctionDto: CreateAuctionDto) {
-    return this.auctionService.createAuction(createAuctionDto);
+  createAuction(
+    @Body() createAuctionDto: CreateAuctionDto,
+    @Req() request: any,
+  ) {
+    console.log(request.user);
+    return this.auctionService.createAuction(
+      createAuctionDto,
+      request.user.userId,
+    );
   }
 }
