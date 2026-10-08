@@ -1,6 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { AuctionService } from './auction.service';
-import { CreateAuctionDto } from './dto/create-auction.dto';
+import { AuctionService } from './auction.service.js';
+import { CreateAuctionDto } from './dto/create-auction.dto.js';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard.js';
 import { Roles } from '../auth/decorators/roles/roles.decorator.js';
