@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateAuctionDto } from './dto/create-auction.dto.js';
 import { db } from '../prisma/db.js';
+import { Temporal } from 'temporal-polyfill';
 
 @Injectable()
 export class AuctionService {
@@ -15,9 +16,9 @@ export class AuctionService {
     if (!requestedVehicle) {
       throw new NotFoundException('There is no vehicle with such id');
     }
-    const startTime = new Date(createAuctionDto.startTime);
-    const endTime = new Date(createAuctionDto.endTime);
-    if (startTime >= endTime) {
+    const startTime = Temporal.Instant.from(createAuctionDto.startTime);
+    const endTime = Temporal.Instant.from(createAuctionDto.endTime);
+    if (Temporal.Instant.compare(startTime, endTime) >= 0) {
       throw new BadRequestException('End time must be after start time');
     }
     const startingPrice = createAuctionDto.startingPrice;
