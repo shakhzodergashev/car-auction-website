@@ -25,6 +25,15 @@ export class AuctionService {
     if (startingPrice <= 0) {
       throw new BadRequestException('Starting price must be greater than 0');
     }
+
+    const records = await db.orm.public.Auction.where({
+      vehicleId: vehicleId,
+      status: 'LIVE',
+    }).all();
+
+    if (records.length > 0) {
+      throw new BadRequestException('This vehicle already has a live auction');
+    }
     const newAuction = await db.orm.public.Auction.create({
       startingPrice: startingPrice,
       startTime: startTime,
@@ -34,5 +43,35 @@ export class AuctionService {
       status: 'DRAFT',
     });
     return newAuction;
+  }
+
+  async goLive(auctionId: number) {
+    const records = await db.orm.public.Auction.where({ id: auctionId }).all();
+    const requestedAuction = records[0];
+    if (!requestedAuction) {
+      throw new NotFoundException('There is no auction with such id');
+    }
+    if (requestedAuction.status !== 'DRAFT') {
+      throw new BadRequestException('Only draft auctions can be activated');
+    }
+    const liveAuctions = await db.orm.public.Auction.where({
+      vehicleId: requestedAuction.vehicleId,
+      status: 'LIVE',
+    }).all();
+    if (liveAuctions.length > 0) {
+      throw new BadRequestException('This vehicle already has a live auction');
+    }
+    if (
+      Temporal.Instant.compare(
+        requestedAuction.startTime,
+        requestedAuction.endTime,
+      ) >= 0
+    ) {
+      throw new BadRequestException('End time must be after start time');
+    }
+    const updatedAuction = await db.orm.public.Auction.where({
+      id: auctionId,
+    }).update({ status: 'LIVE' });
+    return updatedAuction;
   }
 }
