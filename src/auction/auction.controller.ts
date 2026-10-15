@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Patch, Param } from '@nestjs/common';
+import { Controller, Post, Body, Req, Patch, Param, Get } from '@nestjs/common';
 import { AuctionService } from './auction.service.js';
 import { CreateAuctionDto } from './dto/create-auction.dto.js';
 import { UseGuards } from '@nestjs/common';
@@ -28,5 +28,20 @@ export class AuctionController {
   @Roles('MANAGER')
   activateAuction(@Param('id') auctionId: string) {
     return this.auctionService.goLive(Number(auctionId));
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  getAuctions(
+    @Req()
+    request: any,
+  ) {
+    return this.auctionService.getAuctions(request.user.role);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  getAuctionsById(@Param('id') id: string, @Req() request: any) {
+    return this.auctionService.getAuctionsById(id, request.user.role);
   }
 }

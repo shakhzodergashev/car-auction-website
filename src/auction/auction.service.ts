@@ -74,4 +74,40 @@ export class AuctionService {
     }).update({ status: 'LIVE' });
     return updatedAuction;
   }
+
+  async getAuctions(role: string) {
+    if (role === 'BUYER') {
+      const auctions = await db.orm.public.Auction.where({ status: 'LIVE' })
+        .include('vehicle', (query) =>
+          query.include('model', (query) => query.include('make')),
+        )
+        .all();
+      return auctions;
+    }
+    const auctions = await db.orm.public.Auction.include('vehicle', (query) =>
+      query.include('model', (query) => query.include('make')),
+    ).all();
+    return auctions;
+  }
+
+  async getAuctionsById(id: string, role: string) {
+    const auctionId = Number(id);
+
+    const records = await db.orm.public.Auction.where({ id: auctionId })
+      .include('vehicle', (query) =>
+        query.include('model', (query) => query.include('make')),
+      )
+      .all();
+
+    const auction = records[0];
+
+    if (!auction) {
+      throw new NotFoundException('Auction not found');
+    }
+
+    if (role === 'BUYER' && auction.status !== 'LIVE') {
+      throw new NotFoundException('Auction not found');
+    }
+    return auction;
+  }
 }
